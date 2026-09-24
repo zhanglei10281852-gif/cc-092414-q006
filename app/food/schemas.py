@@ -60,3 +60,51 @@ class RiskDecision(BaseModel):
     reason: str = Field(..., min_length=1, max_length=300)
     operator: str = Field(..., min_length=1, max_length=80)
 
+
+class CertificateItem(BaseModel):
+    analyte: str = Field(..., min_length=1, max_length=80)
+    method: str = Field(..., min_length=1, max_length=80)
+    value_mg_kg: float = Field(..., ge=0, le=100000)
+    limit_mg_kg: float = Field(..., ge=0, le=100000)
+    unit: str = Field(default="mg/kg", min_length=1, max_length=20)
+
+
+class CertificateCreate(BaseModel):
+    certificate_no: str = Field(..., min_length=3, max_length=80)
+    lab_name: str = Field(..., min_length=1, max_length=120)
+    sample_id: int | None = None
+    items: list[CertificateItem] = Field(..., min_length=1, max_length=50)
+    remark: str = Field(default="", max_length=300)
+
+    @field_validator("certificate_no")
+    @classmethod
+    def normalize_certificate_no(cls, value: str) -> str:
+        return value.strip().upper()
+
+
+class CertificateUpdate(BaseModel):
+    expected_version: int = Field(..., ge=1)
+    lab_name: str | None = Field(default=None, min_length=1, max_length=120)
+    sample_id: int | None = None
+    items: list[CertificateItem] | None = Field(default=None, min_length=1, max_length=50)
+    remark: str | None = Field(default=None, max_length=300)
+
+
+class CertificateSubmit(BaseModel):
+    expected_version: int = Field(..., ge=1)
+
+
+class CertificateReturn(BaseModel):
+    expected_version: int = Field(..., ge=1)
+    opinion: str = Field(..., min_length=1, max_length=300)
+
+
+class CertificateApprove(BaseModel):
+    expected_version: int = Field(..., ge=1)
+    opinion: str = Field(default="", max_length=300)
+
+
+class CertificateRevoke(BaseModel):
+    expected_version: int = Field(..., ge=1)
+    reason: str = Field(..., min_length=1, max_length=300)
+

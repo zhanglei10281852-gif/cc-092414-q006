@@ -13,6 +13,7 @@ from app.seismic.router import router as seismic_router
 from app.seismic.service import ensure_schema as ensure_seismic_schema
 from app.food.router import router as food_router
 from app.food.service import ensure_schema as ensure_food_schema
+from app.food.certificates import ensure_certificate_schema
 
 
 @asynccontextmanager
@@ -21,6 +22,7 @@ async def lifespan(app: FastAPI):
     init_db()
     ensure_seismic_schema()
     ensure_food_schema()
+    ensure_certificate_schema()
     yield
     close_connection()
 

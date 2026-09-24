@@ -36,6 +36,18 @@ class ValidationError(DomainError):
     code = "validation_error"
 
 
+class StaleVersionError(ConflictError):
+    code = "stale_version"
+
+
+class InvalidStateError(ConflictError):
+    code = "invalid_state"
+
+
+class SelfReviewError(PermissionDeniedError):
+    code = "self_review_forbidden"
+
+
 class AccountLockedError(AuthenticationError):
     code = "account_locked"
 
