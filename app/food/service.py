@@ -96,9 +96,69 @@ CREATE TABLE IF NOT EXISTS food_audit (
     payload_json TEXT NOT NULL DEFAULT '{}',
     created_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS food_certificates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lot_id INTEGER NOT NULL REFERENCES food_lots(id) ON DELETE RESTRICT,
+    certificate_no TEXT NOT NULL UNIQUE,
+    lab_name TEXT NOT NULL,
+    issued_at TEXT NOT NULL,
+    overall_verdict TEXT NOT NULL CHECK(overall_verdict IN ('pass','fail')),
+    near_limit INTEGER NOT NULL DEFAULT 0 CHECK(near_limit IN (0,1)),
+    payload_json TEXT NOT NULL DEFAULT '{}',
+    status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','pending_review','returned','approved','revoked')),
+    doc_version INTEGER NOT NULL DEFAULT 1,
+    created_by_user_id INTEGER NOT NULL,
+    created_by_name TEXT NOT NULL,
+    submitted_by_user_id INTEGER,
+    submitted_by_name TEXT NOT NULL DEFAULT '',
+    submitted_at TEXT,
+    reviewed_by_user_id INTEGER,
+    reviewed_by_name TEXT NOT NULL DEFAULT '',
+    reviewed_at TEXT,
+    revoked_by_user_id INTEGER,
+    revoked_by_name TEXT NOT NULL DEFAULT '',
+    revoked_at TEXT,
+    revoke_reason TEXT NOT NULL DEFAULT '',
+    latest_review_opinion TEXT NOT NULL DEFAULT '',
+    reevaluation_status TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS food_certificate_versions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    certificate_id INTEGER NOT NULL REFERENCES food_certificates(id) ON DELETE CASCADE,
+    doc_version INTEGER NOT NULL,
+    change_type TEXT NOT NULL CHECK(change_type IN ('create','revise')),
+    payload_json TEXT NOT NULL,
+    content_hash TEXT NOT NULL,
+    overall_verdict TEXT NOT NULL CHECK(overall_verdict IN ('pass','fail')),
+    near_limit INTEGER NOT NULL,
+    risk_snapshot_json TEXT NOT NULL,
+    snapshot_lot_version INTEGER NOT NULL,
+    snapshot_lot_status TEXT NOT NULL,
+    snapshot_lot_risk_level TEXT NOT NULL,
+    created_by_user_id INTEGER NOT NULL,
+    created_by_name TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE(certificate_id, doc_version)
+);
+CREATE TABLE IF NOT EXISTS food_certificate_opinions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    certificate_id INTEGER NOT NULL REFERENCES food_certificates(id) ON DELETE CASCADE,
+    doc_version INTEGER NOT NULL,
+    action TEXT NOT NULL CHECK(action IN ('submit','return','approve','revoke')),
+    from_status TEXT NOT NULL,
+    to_status TEXT NOT NULL,
+    opinion TEXT NOT NULL DEFAULT '',
+    actor_user_id INTEGER NOT NULL,
+    actor_name TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
 CREATE INDEX IF NOT EXISTS idx_food_samples_lot ON food_samples(lot_id, collected_at);
 CREATE INDEX IF NOT EXISTS idx_food_results_sample ON food_test_results(sample_id, tested_at);
 CREATE INDEX IF NOT EXISTS idx_food_shipments_lot ON food_shipments(lot_id, departure_at);
+CREATE INDEX IF NOT EXISTS idx_food_certs_lot ON food_certificates(lot_id, status);
+CREATE INDEX IF NOT EXISTS idx_food_cert_opinions ON food_certificate_opinions(certificate_id, id);
 """
 
 

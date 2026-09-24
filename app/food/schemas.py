@@ -60,3 +60,30 @@ class RiskDecision(BaseModel):
     reason: str = Field(..., min_length=1, max_length=300)
     operator: str = Field(..., min_length=1, max_length=80)
 
+
+class CertificateCreate(BaseModel):
+    certificate_no: str = Field(..., min_length=3, max_length=80)
+    lab_name: str = Field(..., min_length=1, max_length=120)
+    issued_at: str = Field(..., min_length=20, max_length=40)
+    summary: str = Field(default="", max_length=500)
+    result_ids: list[int] = Field(..., min_length=1)
+
+    @field_validator("certificate_no")
+    @classmethod
+    def normalize_certificate_no(cls, value: str) -> str:
+        return value.strip().upper()
+
+
+class CertificateRevise(CertificateCreate):
+    expected_version: int | None = Field(default=None, ge=1)
+
+
+class CertificateOpinion(BaseModel):
+    opinion: str = Field(default="", max_length=500)
+    expected_version: int | None = Field(default=None, ge=1)
+
+
+class CertificateRevokeRequest(BaseModel):
+    reason: str = Field(..., min_length=1, max_length=300)
+    expected_version: int | None = Field(default=None, ge=1)
+

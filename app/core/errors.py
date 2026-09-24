@@ -21,6 +21,11 @@ class ConflictError(DomainError):
     code = "conflict"
 
 
+class StaleVersionError(DomainError):
+    status_code = 409
+    code = "stale_version"
+
+
 class AuthenticationError(DomainError):
     status_code = 401
     code = "authentication_failed"
